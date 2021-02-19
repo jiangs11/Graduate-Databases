@@ -1,0 +1,97 @@
+1) PubSub (using node.js)
+
+Example 1 Run:
+
+Publisher:
+node publisher.js -c emergency -k hello -m world
+
+Subscriber 1 (Emergency Channel):
+Output: Message {"hello": "world"} has arrived on channel emergency!
+
+Subscriber 2 (Notifications Channel):
+Output: 
+
+
+Example 2 Run:
+
+Publisher:
+node publisher.js -c notifications -k foo -m bar
+
+Subscriber 1 (Emergency Channel):
+Output: 
+
+Subscriber 2 (Notifications Channel):
+Output: Message {"foo": "bar"} has arrived on channel notifications!
+
+
+Example 3 Run:
+
+Publisher:
+node publisher.js -c notifications -k urgent -m covid
+
+Subscriber 1 (Emergency Channel):
+Output: Message {"urgent": "covid"} has arrived on channel emergency!
+
+Subscriber 2 (Notifications Channel):
+Output: Detected urgency! Republished to emergency channel!
+
+
+
+2) Storing values in Redis (using PHP)
+
+Example 1 Run (First time adding to set):
+
+Command : cat accountInput.txt | xargs php processAccount.php
+Output: 
+
+Redis version: 4.0.9
+Starting to add genre Romance to set!
+Success!
+Starting to add genre Comedy to set!
+Success!
+
+Starting to add account info for user: 10d2e5
+Success!
+
+
+Example 2 Run (Already added to set):
+
+Command: cat accountInput.txt | xargs php processAccount.php
+Output:
+
+Redis version: 4.0.9
+Starting to add genre Romance to set!
+Failed! Already in Set!
+Starting to add genre Comedy to set!
+Failed! Already in Set!
+
+Starting to add account info for user: 10d2e5
+Success!
+
+
+
+3) Retrieving Redis values
+
+Command: cat userIDInput.txt | xargs php retrieveInfo.php
+
+Redis version: 4.0.9
+Starting to retrieve info for user jiangs1:10d2e5
+Successfully retrieved name: "Della Robbins"
+Successfully retrieved phone number: "856-999-2323"
+Successfully retrieved list of genres:
+ - Romance
+ - Comedy
+
+
+
+4) Communicating using the RESP protocol
+
+Option 4 Output:
+Socket address: /127.0.0.1
+Socket port: 6379
++OK\r\n
+
+Option 5 Output:
+Socket address: /127.0.0.1
+Socket port: 6379
+$6\r\nturtle\r\n

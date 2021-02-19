@@ -1,0 +1,105 @@
+CREATE OR REPLACE PROCEDURE move (
+	personID IN NUMBER, 
+	poiID1 IN NUMBER, 
+	poiID2 IN NUMBER
+) 
+AS 
+	X1 NUMBER; 
+	Y1 NUMBER;
+	X2 NUMBER;
+	Y2 NUMBER; 
+	X1_greater_X2 NUMBER;
+	Y1_greater_Y2 NUMBER;
+	starting VARCHAR(50);
+	destination VARCHAR(50);
+	positionStatus NUMBER;
+	
+BEGIN
+
+	-- X location of starting spot
+	SELECT p.poi_location.sdo_point.x INTO X1
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	-- Y location of starting spot
+	SELECT p.poi_location.sdo_point.y INTO Y1
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	-- X location of destination spot
+	SELECT p.poi_location.sdo_point.x INTO X2
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+	
+	-- Y location of destination spot
+	SELECT p.poi_location.sdo_point.y INTO Y2
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+	
+	
+	IF X1 > X2 THEN 
+		X1_greater_X2 := 1;
+	ELSE 
+		X1_greater_X2 := 0;
+	END IF;
+	
+	IF Y1 > Y2 THEN 
+		Y1_greater_Y2 := 1;
+	ELSE 
+		Y1_greater_Y2 := 0;
+	END IF;
+	
+	SELECT p.poi_name INTO starting
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	SELECT p.poi_name INTO destination
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+
+	DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' ' || starting);
+
+	WHILE (X1 != X2 OR Y1 != Y2)
+	LOOP
+		IF X1_greater_X2 = 1 AND X1 != X2 THEN
+			X1 := X1 - 1;
+		ELSIF X1_greater_X2 = 0 AND X1 != X2 THEN
+			X1 := X1 + 1;
+		END IF;
+		
+		IF Y1_greater_Y2 = 1 AND Y1 != Y2 THEN 
+			Y1 := Y1 - 1;
+		ELSIF Y1_greater_Y2 = 0 AND Y1 != Y2 THEN
+			Y1 := Y1 + 1;
+		END IF;
+		
+		UPDATE Person 
+		SET person_location = SDO_GEOMETRY(2001, null, SDO_POINT_TYPE(X1, Y1, NULL), NULL, NULL) WHERE person_id = personID;
+		COMMIT;
+		
+		SELECT count(l.lake_id) INTO positionStatus 
+		FROM Lake l, Person p 
+		WHERE l.lake_id = 1 AND p.person_id = personID AND SDO_INSIDE(p.person_location, l.lake_location) = 'TRUE';
+		
+		IF positionStatus = 0 THEN 
+			SELECT count(l.lake_id) INTO positionStatus
+			FROM Lake l, Person p
+			WHERE l.lake_id = 2 AND p.person_id = personID AND SDO_INSIDE(p.person_location, l.lake_location) = 'TRUE';
+			
+			IF positionStatus = 1 THEN
+				positionStatus := 2;
+			END IF;
+		END IF;
+		
+		IF positionStatus = 0 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' walking on solid ground');
+		ELSIF positionStatus = 1 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' swimming in Lower Aetna Lake');
+		ELSIF positionStatus = 2 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' swimming in Upper Aetna Lake');
+		END IF;
+	END LOOP;
+	
+	DBMS_OUTPUT.PUT_LINE('Arrived at ' || destination);
+END move;
+/

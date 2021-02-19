@@ -1,0 +1,372 @@
+drop table POI;
+drop table Lake;
+drop table Person;
+drop view people_in_lakes;
+
+create table POI (
+	poi_id number primary key,
+	poi_name varchar(50 byte),
+	poi_location sdo_geometry not null
+);
+
+insert into POI values(
+	1,
+    'PJ Whelihans',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(40, 75, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	2,
+    'Medford Lakes Country Clubhouse',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(75, 61, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	3,
+    'Zinc Cafe',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(27, 99, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	4,
+    'YMCA Camp Ockanickon',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(80, 8, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	5,
+    '13 Big Chief Trail',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(40, 50, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	6,
+    'Chicagami Trailhead',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(80, 21, null),
+		null,
+		null
+    )
+);
+
+insert into POI values(
+	7,
+    'Upper Aetna Lake Dam',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(90, 31, null),
+		null,
+		null
+    )
+);
+
+
+
+create table Lake (
+	lake_id number primary key,
+	lake_name varchar(50 byte),
+	lake_location sdo_geometry not null
+);
+
+insert into Lake values(
+	1,
+    'Lower Aetna Lake',
+    sdo_geometry(
+		2003,
+        null,
+		null,
+		sdo_elem_info_array(1,1003,1),
+		sdo_ordinate_array(47,72, 47,70, 47,67, 51,62, 52,60, 53,59, 53,57, 54,55, 56,54, 57,54, 58,53, 60,51, 61,47, 61,46, 62,45, 62,44, 60,42, 60,41, 61,41, 63,43, 65,43, 66,44, 65,45, 63,48, 64,50, 64,52, 60,54, 58,59, 53,63, 51,69, 51,71, 53,70, 54,70, 54,71, 53,71, 52,72, 49,74, 47,72)
+    )
+);
+
+insert into Lake values(
+	2,
+    'Upper Aetna Lake',
+    sdo_geometry(
+		2003,
+        null,
+		null,
+		sdo_elem_info_array(1,1003,1, 67,2003,1),
+		sdo_ordinate_array(85,19, 87,20, 86,26, 88,27, 94,25, 96,22, 97,23, 97,25, 90,30, 84,28, 82,26, 78,31, 78,34, 76,36, 78,38, 75,41, 73,43, 68,44, 67,44, 65,42, 67,39, 68,36, 69,37, 72,38, 73,36, 72,35, 73,33, 76,31, 75,29, 78,26, 79,23, 82,22, 85,19, 84,26, 88,28, 85,27, 84,26)
+    )
+);
+
+
+
+create table Person (
+	person_id number primary key,
+	person_name varchar(50 byte),
+	person_location sdo_geometry not null
+);
+
+insert into Person values(
+	1,
+    'Amber',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(70, 40, null),
+		null,
+		null
+    )
+);
+
+insert into Person values(
+	2,
+    'Bill',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(55, 58, null),
+		null,
+		null
+    )
+);
+
+insert into Person values(
+	3,
+    'Cherise',
+    sdo_geometry(
+		2001,
+        null,
+		sdo_point_type(65, 35, null),
+		null,
+		null
+    )
+);
+
+
+
+-- update metadata view
+INSERT INTO user_sdo_geom_metadata
+    (TABLE_NAME,
+     COLUMN_NAME,
+     DIMINFO,
+     SRID)
+    VALUES(
+        'POI',
+        'poi_location',
+        SDO_DIM_ARRAY(
+            SDO_DIM_ELEMENT('X',0,100,1),
+            SDO_DIM_ELEMENT('Y',0,100,1)
+         ),
+    NULL
+);
+
+INSERT INTO user_sdo_geom_metadata
+    (TABLE_NAME,
+     COLUMN_NAME,
+     DIMINFO,
+     SRID)
+    VALUES(
+        'Person',
+        'person_location',
+        SDO_DIM_ARRAY(
+            SDO_DIM_ELEMENT('X',0,100,1),
+            SDO_DIM_ELEMENT('Y',0,100,1)
+         ),
+    NULL
+);
+
+INSERT INTO user_sdo_geom_metadata
+    (TABLE_NAME,
+     COLUMN_NAME,
+     DIMINFO,
+     SRID)
+    VALUES(
+        'Lake',
+        'lake_location',
+        SDO_DIM_ARRAY(
+            SDO_DIM_ELEMENT('X',0,100,1),
+            SDO_DIM_ELEMENT('Y',0,100,1)
+         ),
+    NULL
+);
+
+
+
+CREATE INDEX poi_spatial_index
+  ON POI(poi_location)
+  INDEXTYPE IS MDSYS.SPATIAL_INDEX;
+
+CREATE INDEX lake_spatial_index
+  ON Lake(lake_location)
+  INDEXTYPE IS MDSYS.SPATIAL_INDEX;
+  
+CREATE INDEX person_spatial_index
+  ON Person(person_location)
+  INDEXTYPE IS MDSYS.SPATIAL_INDEX;
+
+
+
+CREATE VIEW people_in_lakes AS  
+SELECT p.person_id, p.person_name, l.lake_name,
+CASE 
+	sdo_relate(p.person_location, l.lake_location, 'mask = INSIDE') WHEN 'TRUE' THEN 'TRUE'
+	ELSE 'FALSE' 
+END in_lake
+FROM Person p, Lake l
+ORDER BY p.person_id ASC, l.lake_name ASC;
+
+
+
+CREATE OR REPLACE FUNCTION person_in_lake(personID IN NUMBER)
+RETURN VARCHAR
+IS 
+	inLake VARCHAR(5);
+BEGIN
+	SELECT count(p.person_id) into inLake
+	FROM Person p, Lake l
+	WHERE p.person_id = personID and sdo_inside(p.person_location, l.lake_location) = 'TRUE';
+	
+	IF inLake = 1 
+		THEN inLake := 'TRUE';
+	ELSE 
+		inLake := 'FALSE';
+	END IF;
+	
+	RETURN inLake;
+END;
+/
+
+
+
+CREATE OR REPLACE PROCEDURE move (
+	personID IN NUMBER, 
+	poiID1 IN NUMBER, 
+	poiID2 IN NUMBER
+) 
+AS 
+	X1 NUMBER; 
+	Y1 NUMBER;
+	X2 NUMBER;
+	Y2 NUMBER; 
+	X1_greater_X2 NUMBER;
+	Y1_greater_Y2 NUMBER;
+	starting VARCHAR(50);
+	destination VARCHAR(50);
+	positionStatus NUMBER;
+	
+BEGIN
+
+	-- X location of starting spot
+	SELECT p.poi_location.sdo_point.x INTO X1
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	-- Y location of starting spot
+	SELECT p.poi_location.sdo_point.y INTO Y1
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	-- X location of destination spot
+	SELECT p.poi_location.sdo_point.x INTO X2
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+	
+	-- Y location of destination spot
+	SELECT p.poi_location.sdo_point.y INTO Y2
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+	
+	
+	IF X1 > X2 THEN 
+		X1_greater_X2 := 1;
+	ELSE 
+		X1_greater_X2 := 0;
+	END IF;
+	
+	IF Y1 > Y2 THEN 
+		Y1_greater_Y2 := 1;
+	ELSE 
+		Y1_greater_Y2 := 0;
+	END IF;
+	
+	SELECT p.poi_name INTO starting
+	FROM POI p
+	WHERE p.poi_id = poiID1;
+	
+	SELECT p.poi_name INTO destination
+	FROM POI p
+	WHERE p.poi_id = poiID2;
+
+	DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' ' || starting);
+
+	WHILE (X1 != X2 OR Y1 != Y2)
+	LOOP
+		IF X1_greater_X2 = 1 AND X1 != X2 THEN
+			X1 := X1 - 1;
+		ELSIF X1_greater_X2 = 0 AND X1 != X2 THEN
+			X1 := X1 + 1;
+		END IF;
+		
+		IF Y1_greater_Y2 = 1 AND Y1 != Y2 THEN 
+			Y1 := Y1 - 1;
+		ELSIF Y1_greater_Y2 = 0 AND Y1 != Y2 THEN
+			Y1 := Y1 + 1;
+		END IF;
+		
+		UPDATE Person 
+		SET person_location = SDO_GEOMETRY(2001, null, SDO_POINT_TYPE(X1, Y1, NULL), NULL, NULL) WHERE person_id = personID;
+		COMMIT;
+		
+		SELECT count(l.lake_id) INTO positionStatus 
+		FROM Lake l, Person p 
+		WHERE l.lake_id = 1 AND p.person_id = personID AND SDO_INSIDE(p.person_location, l.lake_location) = 'TRUE';
+		
+		IF positionStatus = 0 THEN 
+			SELECT count(l.lake_id) INTO positionStatus
+			FROM Lake l, Person p
+			WHERE l.lake_id = 2 AND p.person_id = personID AND SDO_INSIDE(p.person_location, l.lake_location) = 'TRUE';
+			
+			IF positionStatus = 1 THEN
+				positionStatus := 2;
+			END IF;
+		END IF;
+		
+		IF positionStatus = 0 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' walking on solid ground');
+		ELSIF positionStatus = 1 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' swimming in Lower Aetna Lake');
+		ELSIF positionStatus = 2 THEN 
+			DBMS_OUTPUT.PUT_LINE('X:' || X1 || ' Y:' || Y1 || ' swimming in Upper Aetna Lake');
+		END IF;
+	END LOOP;
+	
+	DBMS_OUTPUT.PUT_LINE('Arrived at ' || destination);
+END move;
+/
